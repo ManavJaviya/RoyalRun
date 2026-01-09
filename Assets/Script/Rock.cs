@@ -19,12 +19,12 @@ public class Rock : MonoBehaviour
     }
     void OnCollisionEnter(Collision other)
     {
-        if (collisionTimer > collisionCooldown) return;
+        if (collisionTimer < collisionCooldown) return;
 
         FireImplse();
         CollisionFX(other);
 
-        //collisionTimer = 0f;
+        collisionTimer = 0f;
     }
 
     void FireImplse()
@@ -42,7 +42,4 @@ public class Rock : MonoBehaviour
         collisionParticleSystem.Play();
         bounceAudioSoursce.Play();
     }
-
-
-
 }

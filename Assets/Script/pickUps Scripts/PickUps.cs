@@ -14,11 +14,16 @@ public abstract class PickUps : MonoBehaviour
     {
         if (other.CompareTag(PlayerString))
         {
+            AudioSource playPickupAudio = other.GetComponent<AudioSource>();
+            AudioClip clip = GetPickUpSound();
+            if(clip != null && playPickupAudio != null)
+            {
+                playPickupAudio.PlayOneShot(clip);
+            }
             OnPickUp();
             Destroy(gameObject);
         }
     }
-    protected abstract void  OnPickUp(); // subclasses return an AudioSource
-
-    
+    protected abstract void OnPickUp(); // subclasses return an AudioSource
+    protected abstract AudioClip GetPickUpSound();
 }

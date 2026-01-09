@@ -1,11 +1,14 @@
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     [SerializeField] PlayerController playerController;
     [SerializeField] TMP_Text timeText;
     [SerializeField] GameObject gameOverText;
+    [SerializeField] GameObject restartButton;
     [SerializeField] float startTime = 5f;
 
     float timeLeft;
@@ -17,11 +20,18 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         timeLeft = startTime;
+        // Hide restart button at start
+        if (restartButton != null)
+            restartButton.SetActive(false);
     }
 
     void Update()
     {
-       DecreaseTime();
+        DecreaseTime();
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Exit();
+        }
     }
     public void IncreaseTime(float amount)
     {
@@ -48,8 +58,26 @@ public class GameManager : MonoBehaviour
             gameOver = true;
             playerController.enabled = false;
             gameOverText.SetActive(true);
+
+            // Show restart button
+            if (restartButton != null)
+                restartButton.SetActive(true);
+
             Time.timeScale = 0.1f;
         }
     }
 
+    // Method to restart the game
+    public void RestartGame()
+    {
+        // Reset time scale to normal
+        Time.timeScale = 1f;
+
+        // Reload the current scene
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    public void Exit()
+    {
+        Application.Quit();
+    }
 }

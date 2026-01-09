@@ -8,7 +8,7 @@ public class LevelGenerator : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] CameraControler cameraControler;
-    [SerializeField] GameObject chunkPrefab;
+    [SerializeField] GameObject[] chunkPrefabs;
     [SerializeField] GameObject CheckPointchunkPrefabs;
 
     [SerializeField] Transform chunkParent;
@@ -25,7 +25,6 @@ public class LevelGenerator : MonoBehaviour
     [SerializeField] float minGravityZ = -22f;
     [SerializeField] float maxGravityZ = -2f;
 
-    //GameObject[] chunks = new GameObject[12];
     List<GameObject> chunks = new List<GameObject>();
     int chunkSwaned = 0;
     void Start()
@@ -48,10 +47,15 @@ public class LevelGenerator : MonoBehaviour
 
             float newGravityZ = Physics.gravity.z - speedAmount;
             newGravityZ = Mathf.Clamp(newGravityZ, minGravityZ, maxGravityZ);
-            Physics.gravity = new Vector3(Physics.gravity.x, Physics.gravity.y, Physics.gravity.z - moveSpeed);
+            Physics.gravity = new Vector3(Physics.gravity.x, Physics.gravity.y, newGravityZ);
         
             cameraControler.changeCameraFOV(speedAmount);
         }
+    }
+    
+    public float GetCurrentMoveSpeed()
+    {
+        return moveSpeed;
     }
      public void SpanStratingChucks()
      {
@@ -74,22 +78,29 @@ public class LevelGenerator : MonoBehaviour
             //spanPositionZ = transform.position.z + (i * chunkLength);
             spanPositionZ = chunks[chunks.Count - 1].transform.position.z + chunkLength;
         }
-
         return spanPositionZ;
     }
     void MoveChunks ()
     {
-        for (int i = 0; i < chunks.Count; i++)
+        // Iterate backwards to safely remove items
+        for (int i = chunks.Count - 1; i >= 0; i--)
         {
             GameObject chunk = chunks[i];
-            chunk.transform.Translate( - transform.forward * (moveSpeed * Time.deltaTime));
+            
+            // Check if chunk is null (in case it was already destroyed)
+            if (chunk == null)
+            {
+                chunks.RemoveAt(i);
+                continue;
+            }
+            
+            chunk.transform.Translate(-transform.forward * (moveSpeed * Time.deltaTime));
 
             if (chunk.transform.position.z <= Camera.main.transform.position.z - chunkLength)
             {
-                chunks.Remove(chunk);
+                chunks.RemoveAt(i);  // Safe removal when iterating backwards
                 Destroy(chunk);
                 SpanChunk();
-
             }
         }
     }
@@ -105,7 +116,8 @@ public class LevelGenerator : MonoBehaviour
         }
         else
         {
-            chunkToSpawn = chunkPrefab;
+            int randomIndex = UnityEngine.Random.Range(0, chunkPrefabs.Length);
+            chunkToSpawn = chunkPrefabs[randomIndex];
         }
         GameObject newChunkGO = Instantiate(chunkToSpawn, chunkSwanPoz, Quaternion.identity, chunkParent);
 
